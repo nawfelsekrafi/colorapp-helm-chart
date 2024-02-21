@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "colorapp-chart.fullname" . }}
+  labels:
+    app: {{ include "colorapp-chart.name" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "colorapp-chart.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "colorapp-chart.name" . }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: 8080
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+          volumeMounts:
+            - name: data-volume
+              mountPath: "/tmp/data"
+{{- if .Values.persistence.enabled }}
+      volumes:
+        - name: data-volume
+          persistentVolumeClaim:
+            claimName: {{ include "colorapp-chart.fullname" . }}
+{{- end }}
